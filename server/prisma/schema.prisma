@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bookings      Booking[]
+  transactions  Transaction[]
+  sessions      Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Trip {
+  id               String   @id @default(cuid())
+  mode             String
+  operator         String
+  price            Int
+  rating           Float
+  reviewCount      Int
+  departureTime    String
+  arrivalTime      String
+  durationLabel    String
+  durationMinutes  Int
+  stops            Int
+  amenities        String
+  cancellation     String
+  seatsAvailable   Int?
+  busType          String?
+  boardingPoint    String?
+  droppingPoint    String?
+  trainName        String?
+  trainNumber      String?
+  travelClass      String?
+  flightNumber     String?
+  departureAirport String?
+  arrivalAirport   String?
+  baggage          String?
+  cabinClass       String?
+  cabType          String?
+  driverName       String?
+  capacity         Int?
+  vehicleFeatures  String?
+  metroLine        String?
+  stationsCount    Int?
+  nextDeparture    String?
+  fare             Int?
+  departurePort    String?
+  arrivalPort      String?
+  seatingClass     String?
+  origin           String
+  destination      String
+  departDate       DateTime
+  createdAt        DateTime @default(now())
+  bookings         Booking[]
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  status       String   @default("UPCOMING")
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId       String
+  trip         Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  seats        String
+  passengers   String
+  total        Int
+  bookedAt     DateTime @default(now())
+  transaction  Transaction?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  bookingId String?  @unique
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method    String
+  amount    Int
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+}
+
+model SearchLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  mode          String
+  origin        String
+  destination   String
+  departDate    DateTime
+  returnDate    DateTime?
+  passengers    String
+  travelClass   String?
+  resultsCount  Int
+  createdAt     DateTime @default(now())
+}
