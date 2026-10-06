@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -32,7 +33,7 @@ export function Input({ label, error, icon, trailing, className, id, ...props }:
             icon && 'pl-12',
             trailing && 'pr-12',
             error && 'border-[var(--color-error)] focus:ring-[var(--color-error)] focus:border-[var(--color-error)]',
-            props.className,
+
           )}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={error ? `${inputId}-error` : undefined}
@@ -70,7 +71,6 @@ export function Textarea({ label, error, className, id, ...props }: Omit<InputPr
           'focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-[var(--color-accent)] focus:bg-[var(--color-bg-elevated)]',
           'disabled:opacity-50 disabled:pointer-events-none',
           error && 'border-[var(--color-error)] focus:ring-[var(--color-error)] focus:border-[var(--color-error)]',
-          props.className,
         )}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${textareaId}-error` : undefined}
@@ -106,7 +106,7 @@ export function Select({ label, error, className, id, options, placeholder, ...p
             'focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-[var(--color-accent)] focus:bg-[var(--color-bg-elevated)]',
             'disabled:opacity-50 disabled:pointer-events-none',
             error && 'border-[var(--color-error)] focus:ring-[var(--color-error)] focus:border-[var(--color-error)]',
-            props.className,
+
           )}
           aria-invalid={error ? 'true' : 'false'}
           aria-describedby={error ? `${selectId}-error` : undefined}

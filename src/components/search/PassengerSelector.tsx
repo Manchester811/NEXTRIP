@@ -1,5 +1,5 @@
 import * as Popover from '@radix-ui/react-popover'
-import { Minus, Plus, Users, ChevronDown } from 'lucide-react'
+import { Users, ChevronDown } from 'lucide-react'
 import type { PassengerCount } from '@/types/transport'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
@@ -27,7 +27,7 @@ export function PassengerSelector({
   classOptions,
   compact,
 }: PassengerSelectorProps) {
-  const total = value.adults + value.children + value.infants
+
 
   const step = (key: keyof PassengerCount, delta: number, min: number) => {
     onChange({ ...value, [key]: Math.max(min, Math.min(9, value[key] + delta)) })
@@ -132,6 +132,3 @@ export function PassengerSelector({
   )
 }
 
-function step(key: keyof PassengerCount, delta: number, min: number) {
-  // This function is defined inline in the component to avoid circular reference
-}

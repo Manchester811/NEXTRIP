@@ -45,7 +45,7 @@ export function PopularDestinations() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
               {d.tag && (
-                <Badge variant="outline-light" className="absolute left-3 top-3">
+                <Badge variant="outline" className="absolute left-3 top-3">
                   {d.tag}
                 </Badge>
               )}

@@ -6,7 +6,6 @@ import type { PassengerCount, SearchParams, TransportMode } from '@/types/transp
 import { TRANSPORT_MODES } from '@/data/modes'
 import { ModeIcon } from '@/components/transport/ModeIcon'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
 import { cn } from '@/lib/utils'
 
 const CLASS_OPTIONS: Partial<Record<TransportMode, string[]>> = {
@@ -38,7 +37,7 @@ export function SearchWidget({ className, floating = false, initial, onSearch }:
   const [travelClass, setTravelClass] = useState<string | undefined>(initial?.travelClass)
   const [error, setError] = useState('')
   const [passengerPopoverOpen, setPassengerPopoverOpen] = useState(false)
-  const [classPopoverOpen, setClassPopoverOpen] = useState(false)
+  const [, setClassPopoverOpen] = useState(false)
 
   const meta = useMemo(() => TRANSPORT_MODES.find((m) => m.id === mode)!, [mode])
   const classOptions = CLASS_OPTIONS[mode]
@@ -237,9 +236,9 @@ export function SearchWidget({ className, floating = false, initial, onSearch }:
                       <div className="rounded-xl border border-white/10 bg-[var(--color-bg-card)] p-4 shadow-[0_20px_40px_rgba(2,9,20,0.4)]">
                         <div className="space-y-4">
                           {[
-                            { key: 'adults', label: 'Adults', hint: '12+ years', min: 1 },
-                            { key: 'children', label: 'Children', hint: '2–11 years', min: 0 },
-                            { key: 'infants', label: 'Infants', hint: 'Under 2 years', min: 0 },
+                            { key: 'adults' as const, label: 'Adults', hint: '12+ years', min: 1 },
+                            { key: 'children' as const, label: 'Children', hint: '2–11 years', min: 0 },
+                            { key: 'infants' as const, label: 'Infants', hint: 'Under 2 years', min: 0 },
                           ].map((row) => (
                             <div key={row.key} className="flex items-center justify-between">
                               <div>

@@ -1,4 +1,4 @@
-import { Star, X } from 'lucide-react'
+import { Star } from 'lucide-react'
 import type { ResultFilters } from '@/types/results'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Slider } from '@/components/ui/Slider'
@@ -171,7 +171,7 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
         <Button variant="secondary" className="flex-1" onClick={() => onChange({ priceRange: priceBounds, departureWindows: [], operators: [], minRating: 0, amenities: [], stops: 'any' })}>
           Clear all
         </Button>
-        <Button variant="primary" className="flex-1" onClose={onClose}>
+        <Button variant="primary" className="flex-1" >
           Apply
         </Button>
       </div>

@@ -33,9 +33,9 @@ export function AmenityRow({ amenities, className }: { amenities: string[]; clas
 }
 
 export function RatingPill({ rating, reviewCount }: { rating: number; reviewCount: number }) {
-  const tone = rating >= 4.3 ? 'signal' : rating >= 3.6 ? 'amber' : 'coral'
+  const tone = rating >= 4.3 ? 'accent' : rating >= 3.6 ? 'warning' : 'error'
   return (
-    <Badge variant={tone as 'signal' | 'amber' | 'coral'} className="gap-1">
+    <Badge variant={tone as 'accent' | 'warning' | 'error'} className="gap-1">
       <Star className="h-3 w-3 fill-current" />
       {rating.toFixed(1)}
       <span className="font-normal opacity-70">({reviewCount})</span>
