@@ -1,5 +1,4 @@
 import { ArrowRight, Clock, MapPin, Check, Star } from 'lucide-react'
-import { motion } from 'motion/react'
 import { useSearchParams } from 'react-router-dom'
 
 export function FeaturedJourney() {

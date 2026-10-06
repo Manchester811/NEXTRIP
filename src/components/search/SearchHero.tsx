@@ -44,7 +44,7 @@ export function SearchHero() {
                       : 'bg-white/[0.03] text-[#8B98A8] border-white/[0.07] hover:text-[#F5F7FA] hover:border-white/[0.14] hover:bg-white/[0.06]',
                   )}
                 >
-                  <m.icon className="h-4 w-4" strokeWidth={2} />
+                  <span className="h-4 w-4 text-xs">o</span>
                   {m.shortLabel}
                 </button>
               )

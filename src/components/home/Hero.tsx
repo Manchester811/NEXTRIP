@@ -1,4 +1,3 @@
-import { ArrowRight } from 'lucide-react'
 import { motion } from 'motion/react'
 import { SearchHero } from '@/components/search/SearchHero'
 
