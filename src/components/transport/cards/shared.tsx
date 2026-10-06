@@ -1,7 +1,6 @@
 import { Star, Wifi, BatteryCharging, Utensils, Tv, Wind, Shield, Sofa, Droplet } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
-import type { TripResult } from '@/types/results'
 
 const AMENITY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   WiFi: Wifi,
@@ -107,10 +106,4 @@ export function PriceBlock({
       </button>
     </div>
   )
-}
-
-export function cancellationTone(c: TripResult['cancellation']) {
-  if (c === 'Free cancellation') return 'text-signal-700'
-  if (c === 'Partially refundable') return 'text-amber-600'
-  return 'text-ink-400'
 }

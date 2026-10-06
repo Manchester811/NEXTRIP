@@ -9,10 +9,10 @@ interface FieldShellProps {
 
 export function FieldShell({ icon, label, children, className }: FieldShellProps) {
   return (
-    <div className={cn('flex items-center gap-2.5 rounded-lg px-3.5 py-3 transition-colors hover:bg-ink-900/[0.03]', className)}>
-      <span className="text-ink-400 shrink-0 [&>svg]:h-[18px] [&>svg]:w-[18px]">{icon}</span>
+    <div className={cn('flex items-center gap-3 rounded-xl border border-white/10 bg-[var(--color-bg-secondary)] p-4 transition-all duration-200 hover:border-white/15', className)}>
+      <span className="text-[var(--color-text-muted)] shrink-0 [&>svg]:h-5 [&>svg]:w-5">{icon}</span>
       <div className="min-w-0 flex-1">
-        <span className="block text-[11px] font-medium uppercase tracking-wide text-ink-400">{label}</span>
+        <span className="block text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]">{label}</span>
         {children}
       </div>
     </div>

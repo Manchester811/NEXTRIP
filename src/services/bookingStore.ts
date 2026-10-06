@@ -16,7 +16,7 @@ export interface BookingRecord {
   status: 'Upcoming' | 'Completed' | 'Cancelled'
   trip: TripResult
   seats: string[]
-  passengers: { name: string; age: string; gender: string }[]
+  passengers: { name: string; age: number; gender: string }[]
   total: number
   bookedAt: string
   transactionId?: string

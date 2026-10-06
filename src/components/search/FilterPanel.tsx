@@ -1,7 +1,8 @@
-import { Star } from 'lucide-react'
+import { Star, X } from 'lucide-react'
 import type { ResultFilters } from '@/types/results'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Slider } from '@/components/ui/Slider'
+import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
 const DEPARTURE_WINDOWS = [
@@ -18,15 +19,38 @@ interface FilterPanelProps {
   amenityOptions: string[]
   priceBounds: [number, number]
   showStops?: boolean
+  onClose?: () => void
 }
 
 function toggle<T>(arr: T[], value: T): T[] {
   return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]
 }
 
-export function FilterPanel({ filters, onChange, operators, amenityOptions, priceBounds, showStops }: FilterPanelProps) {
+export function FilterPanel({ filters, onChange, operators, amenityOptions, priceBounds, showStops, onClose }: FilterPanelProps) {
+  const hasActiveFilters =
+    filters.departureWindows.length > 0 ||
+    filters.operators.length > 0 ||
+    filters.minRating > 0 ||
+    filters.amenities.length > 0 ||
+    filters.stops !== 'any' ||
+    filters.priceRange[0] !== priceBounds[0] ||
+    filters.priceRange[1] !== priceBounds[1]
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 h-full">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display text-lg font-semibold text-[var(--color-text-primary)]">Filters</h3>
+        {hasActiveFilters && onClose && (
+          <button
+            type="button"
+            onClick={() => onChange({ priceRange: priceBounds, departureWindows: [], operators: [], minRating: 0, amenities: [], stops: 'any' })}
+            className="text-xs font-medium text-[var(--color-accent)] hover:underline"
+          >
+            Clear all
+          </button>
+        )}
+      </div>
+
       <FilterSection title="Price range">
         <div className="px-1">
           <Slider
@@ -36,7 +60,7 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
             step={10}
             onChange={(priceRange) => onChange({ ...filters, priceRange })}
           />
-          <div className="mt-2 flex justify-between text-xs font-medium text-ink-500">
+          <div className="mt-2 flex justify-between text-xs font-medium text-[var(--color-text-muted)]">
             <span>₹{filters.priceRange[0].toLocaleString('en-IN')}</span>
             <span>₹{filters.priceRange[1].toLocaleString('en-IN')}</span>
           </div>
@@ -53,8 +77,10 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
                 type="button"
                 onClick={() => onChange({ ...filters, departureWindows: toggle(filters.departureWindows, w.id) })}
                 className={cn(
-                  'rounded-lg border px-2.5 py-2 text-left text-xs font-medium transition-colors',
-                  active ? 'border-signal-600 bg-signal-50 text-signal-700' : 'border-ink-900/10 text-ink-600 hover:border-ink-900/25',
+                  'rounded-xl px-3 py-2.5 text-left text-xs font-medium transition-all duration-200',
+                  active
+                    ? 'bg-[var(--color-accent-muted)] text-[var(--color-accent)] border border-[var(--color-accent)]/20'
+                    : 'bg-white/5 text-[var(--color-text-secondary)] border border-white/10 hover:bg-white/10 hover:text-[var(--color-text-primary)]',
                 )}
               >
                 {w.label}
@@ -74,13 +100,13 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
                 ['1stop', '1 stop or fewer'],
               ] as const
             ).map(([value, label]) => (
-              <label key={value} className="flex items-center gap-2.5 text-sm text-ink-700">
+              <label key={value} className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)] cursor-pointer">
                 <input
                   type="radio"
                   name="stops"
                   checked={filters.stops === value}
                   onChange={() => onChange({ ...filters, stops: value })}
-                  className="h-3.5 w-3.5 accent-[#0d8a7d]"
+                  className="h-4 w-4 accent-[var(--color-accent)]"
                 />
                 {label}
               </label>
@@ -90,9 +116,9 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
       )}
 
       <FilterSection title="Operator">
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2">
           {operators.map((op) => (
-            <label key={op} className="flex items-center gap-2.5 text-sm text-ink-700">
+            <label key={op} className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)] cursor-pointer">
               <Checkbox
                 checked={filters.operators.includes(op)}
                 onCheckedChange={() => onChange({ ...filters, operators: toggle(filters.operators, op) })}
@@ -106,19 +132,20 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
       <FilterSection title="Rating">
         <div className="flex flex-col gap-2">
           {[4, 3, 0].map((r) => (
-            <label key={r} className="flex items-center gap-2.5 text-sm text-ink-700">
+            <label key={r} className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)] cursor-pointer">
               <input
                 type="radio"
                 name="rating"
                 checked={filters.minRating === r}
                 onChange={() => onChange({ ...filters, minRating: r })}
-                className="h-3.5 w-3.5 accent-[#0d8a7d]"
+                className="h-4 w-4 accent-[var(--color-accent)]"
               />
               {r === 0 ? (
                 'Any rating'
               ) : (
-                <span className="flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" /> {r}.0 &amp; above
+                <span className="flex items-center gap-1.5">
+                  <Star className="h-4 w-4 fill-[var(--color-warning)] text-[var(--color-warning)]" />
+                  {r}.0 & above
                 </span>
               )}
             </label>
@@ -127,9 +154,9 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
       </FilterSection>
 
       <FilterSection title="Amenities">
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2">
           {amenityOptions.map((a) => (
-            <label key={a} className="flex items-center gap-2.5 text-sm text-ink-700">
+            <label key={a} className="flex items-center gap-3 text-sm text-[var(--color-text-secondary)] cursor-pointer">
               <Checkbox
                 checked={filters.amenities.includes(a)}
                 onCheckedChange={() => onChange({ ...filters, amenities: toggle(filters.amenities, a) })}
@@ -139,6 +166,15 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
           ))}
         </div>
       </FilterSection>
+
+      <div className="mt-auto pt-4 border-t border-white/10 flex gap-2">
+        <Button variant="secondary" className="flex-1" onClick={() => onChange({ priceRange: priceBounds, departureWindows: [], operators: [], minRating: 0, amenities: [], stops: 'any' })}>
+          Clear all
+        </Button>
+        <Button variant="primary" className="flex-1" onClose={onClose}>
+          Apply
+        </Button>
+      </div>
     </div>
   )
 }
@@ -146,7 +182,7 @@ export function FilterPanel({ filters, onChange, operators, amenityOptions, pric
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="mb-3 text-sm font-semibold text-ink-950">{title}</p>
+      <p className="mb-3 text-sm font-semibold text-[var(--color-text-secondary)]">{title}</p>
       {children}
     </div>
   )

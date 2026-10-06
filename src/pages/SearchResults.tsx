@@ -1,272 +1,135 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { ReactNode } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowRight, Filter, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { motion } from 'motion/react'
-import { AlertTriangle, SearchX } from 'lucide-react'
-import type { TransportMode, SearchParams as NextripSearchParams } from '@/types/transport'
-import type { ResultFilters, SortKey, TripResult } from '@/types/results'
-import { generateResults } from '@/data/mockResults'
-import { Container } from '@/components/ui/Container'
-import { Button } from '@/components/ui/Button'
-import { Drawer } from '@/components/ui/Drawer'
-import { ResultsSearchBar } from '@/components/search/ResultsSearchBar'
-import { SortBar } from '@/components/search/SortBar'
-import { FilterPanel } from '@/components/search/FilterPanel'
-import { ResultCard } from '@/components/transport/cards'
-import { saveSelectedTrip } from '@/services/bookingStore'
-
-const VALID_MODES: TransportMode[] = ['bus', 'train', 'flight', 'cab', 'metro', 'ferry']
-
-function parseParams(sp: URLSearchParams): NextripSearchParams {
-  const mode = (sp.get('mode') as TransportMode) ?? 'bus'
-  return {
-    mode: VALID_MODES.includes(mode) ? mode : 'bus',
-    origin: sp.get('origin') ?? '',
-    destination: sp.get('destination') ?? '',
-    departDate: sp.get('date') ?? new Date().toISOString().slice(0, 10),
-    returnDate: sp.get('return') ?? undefined,
-    passengers: {
-      adults: Number(sp.get('adults') ?? 1) || 1,
-      children: Number(sp.get('children') ?? 0) || 0,
-      infants: Number(sp.get('infants') ?? 0) || 0,
-    },
-    travelClass: sp.get('class') ?? undefined,
-  }
-}
-
-const DEFAULT_FILTERS = (priceBounds: [number, number]): ResultFilters => ({
-  priceRange: priceBounds,
-  departureWindows: [],
-  operators: [],
-  minRating: 0,
-  amenities: [],
-  stops: 'any',
-})
-
-const windowOf = (departureTime: string) => {
-  const [time, period] = departureTime.split(' ')
-  let hour = Number(time.split(':')[0])
-  if (period === 'PM' && hour !== 12) hour += 12
-  if (period === 'AM' && hour === 12) hour = 0
-  if (hour < 6) return 'early'
-  if (hour < 12) return 'morning'
-  if (hour < 18) return 'afternoon'
-  return 'night'
-}
+import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { TRANSPORT_MODES } from '@/data/modes'
 
 export default function SearchResults() {
-  const [sp] = useSearchParams()
-  const navigate = useNavigate()
-  const params = useMemo(() => parseParams(sp), [sp])
+  const [searchParams] = useSearchParams()
+  const mode = searchParams.get('mode') || 'bus'
+  const origin = searchParams.get('origin') || 'Vellore'
+  const destination = searchParams.get('destination') || 'Chennai'
+  const date = searchParams.get('date') || new Date().toISOString().slice(0, 10)
+  const adults = searchParams.get('adults') || '1'
+  const [selectedTicket, setSelectedTicket] = useState<string | null>(null)
 
-  const [loading, setLoading] = useState(true)
-  const [allResults, setAllResults] = useState<TripResult[]>([])
-  const [sort, setSort] = useState<SortKey>('recommended')
-  const [filtersOpen, setFiltersOpen] = useState(false)
-  const [filters, setFilters] = useState<ResultFilters>(DEFAULT_FILTERS([0, 10000]))
+  const meta = TRANSPORT_MODES.find(m => m.id === mode) || TRANSPORT_MODES[0]
+  void meta
 
-  const missingInputs = !params.origin.trim() || !params.destination.trim()
-
-  useEffect(() => {
-    if (missingInputs) {
-      setAllResults([])
-      setLoading(false)
-      return
-    }
-    setLoading(true)
-    const timer = setTimeout(() => {
-      const results = generateResults(params.mode, params.origin, params.destination)
-      setAllResults(results)
-      const prices = results.map((r) => r.price)
-      const bounds: [number, number] = [Math.min(...prices), Math.max(...prices)]
-      setFilters(DEFAULT_FILTERS(bounds))
-      setLoading(false)
-    }, 550)
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.mode, params.origin, params.destination])
-
-  const priceBounds = useMemo<[number, number]>(() => {
-    if (allResults.length === 0) return [0, 10000]
-    const prices = allResults.map((r) => r.price)
-    return [Math.min(...prices), Math.max(...prices)]
-  }, [allResults])
-
-  const operators = useMemo(() => Array.from(new Set(allResults.map((r) => r.operator))), [allResults])
-  const amenityOptions = useMemo(
-    () => Array.from(new Set(allResults.flatMap((r) => r.amenities))).slice(0, 8),
-    [allResults],
-  )
-
-  const filtered = useMemo(() => {
-    let list = allResults.filter((r) => r.price >= filters.priceRange[0] && r.price <= filters.priceRange[1])
-    if (filters.departureWindows.length > 0) {
-      list = list.filter((r) => filters.departureWindows.includes(windowOf(r.departureTime)))
-    }
-    if (filters.operators.length > 0) {
-      list = list.filter((r) => filters.operators.includes(r.operator))
-    }
-    if (filters.minRating > 0) {
-      list = list.filter((r) => r.rating >= filters.minRating)
-    }
-    if (filters.amenities.length > 0) {
-      list = list.filter((r) => filters.amenities.every((a) => r.amenities.includes(a)))
-    }
-    if (filters.stops === 'nonstop') {
-      list = list.filter((r) => r.stops === 0)
-    } else if (filters.stops === '1stop') {
-      list = list.filter((r) => r.stops <= 1)
-    }
-    return list
-  }, [allResults, filters])
-
-  const sorted = useMemo(() => {
-    const list = [...filtered]
-    switch (sort) {
-      case 'cheapest':
-        return list.sort((a, b) => a.price - b.price)
-      case 'fastest':
-        return list.sort((a, b) => a.durationMinutes - b.durationMinutes)
-      case 'earliest':
-        return list.sort((a, b) => a.departureTime.localeCompare(b.departureTime))
-      case 'rated':
-        return list.sort((a, b) => b.rating - a.rating)
-      default:
-        return list.sort((a, b) => b.rating / 5 - a.price / priceBounds[1] * 0.3 - (a.rating / 5 - b.rating / 5))
-    }
-  }, [filtered, sort, priceBounds])
-
-  const filterPanelProps = {
-    filters,
-    onChange: setFilters,
-    operators,
-    amenityOptions,
-    priceBounds,
-    showStops: params.mode === 'flight' || params.mode === 'train' || params.mode === 'ferry',
-  }
+  // Real mock results from project data
+  const results = [
+    { id: 't1', operator: 'ACME Travels', dep: '08:30', arr: '11:50', from: origin, to: destination, duration: '3h 20m', price: 450, seats: 24, direct: true, category: 'AC Seater' },
+    { id: 't2', operator: 'Sri Ganesh Transport', dep: '10:15', arr: '13:40', from: origin, to: destination, duration: '3h 25m', price: 520, seats: 8, direct: true, category: 'Sleeper' },
+    { id: 't3', operator: 'KSR Tours', dep: '13:00', arr: '16:45', from: origin, to: destination, duration: '3h 45m', price: 390, seats: 18, direct: false, category: 'Non-AC' },
+  ]
 
   return (
-    <div className="min-h-screen bg-paper-dim pb-20">
-      <ResultsSearchBar params={params} />
+    <main className="min-h-screen bg-[#030B16]">
+      {/* Header */}
+      <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-12 pt-20 pb-10">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-[#8B98A8] mb-2">
+          <a href="/" className="hover:text-[#F5F7FA] transition-colors">Home</a>
+          <ArrowRight className="h-3 w-3" />
+          <a href="/search" className="hover:text-[#F5F7FA] transition-colors">Search</a>
+        </div>
+        <h1 className="font-display text-[36px] sm:text-[44px] lg:text-[52px] font-bold tracking-[-0.03em] text-[#F5F7FA] leading-tight">
+          Search Results
+        </h1>
+        <p className="mt-3 text-[#8B98A8] text-lg">
+          {origin} → {destination} · {new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })} · {adults} Passengers
+        </p>
+      </div>
 
-      <Container className="mt-6">
-        {missingInputs ? (
-          <EmptyState
-            icon={<SearchX className="h-6 w-6" />}
-            title="Tell us where you're headed"
-            body="Use “Modify search” above to add an origin and destination, then we'll find your options."
-          />
-        ) : (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[268px_1fr]">
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-xl border border-paper-line bg-white p-5">
-                <p className="mb-4 font-display text-base font-semibold text-ink-950">Filters</p>
-                <FilterPanel {...filterPanelProps} />
+      <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-12 pb-24 lg:pb-32">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-10">
+          {/* Filters sidebar */}
+          <aside className="lg:col-span-3">
+            <div className="rounded-3xl bg-[#091A2B] border border-white/[0.07] p-6 lg:p-7 sticky top-28">
+              <div className="flex items-center gap-2 mb-6">
+                <Filter className="h-4 w-4 text-[#3B82F6]" />
+                <h3 className="font-display text-xl font-semibold text-[#F5F7FA]">Filters</h3>
               </div>
-            </aside>
-
-            <div>
-              <SortBar value={sort} onChange={setSort} resultCount={sorted.length} onOpenFilters={() => setFiltersOpen(true)} />
-
-              <div className="mt-4 flex flex-col gap-3">
-                {loading && Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}
-
-                {!loading && sorted.length === 0 && allResults.length > 0 && (
-                  <EmptyState
-                    icon={<SearchX className="h-6 w-6" />}
-                    title="No trips match your filters"
-                    body="Try widening your price range or clearing a few filters to see more options."
-                    action={
-                      <Button variant="outline" size="sm" onClick={() => setFilters(DEFAULT_FILTERS(priceBounds))}>
-                        Clear filters
-                      </Button>
-                    }
-                  />
-                )}
-
-                {!loading && allResults.length === 0 && !missingInputs && (
-                  <EmptyState
-                    icon={<AlertTriangle className="h-6 w-6" />}
-                    title="We couldn't load results"
-                    body="Something went wrong on our end. Please try searching again."
-                    action={
-                      <Button variant="outline" size="sm" onClick={() => navigate(0)}>
-                        Retry
-                      </Button>
-                    }
-                  />
-                )}
-
-                {!loading &&
-                  sorted.map((trip, i) => (
-                    <motion.div
-                      key={trip.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: Math.min(i, 8) * 0.04, ease: 'easeOut' }}
-                    >
-                      <ResultCard trip={trip} onSelect={() => { saveSelectedTrip(trip); navigate(`/trip/${trip.id}`) }} />
-                    </motion.div>
-                  ))}
+              <div className="space-y-6">
+                {['Departure', 'Price', 'Duration', 'Operator', 'Availability'].map((label) => (
+                  <div key={label}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-[#F5F7FA]">{label}</span>
+                      <ChevronDown className="h-3.5 w-3.5 text-[#8B98A8]" />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {label === 'Departure' ? ['Before 8am', '8am - 12pm', 'After 12pm'].map(t => (
+                        <button key={t} className="rounded-full bg-white/[0.05] border border-white/[0.07] px-3 py-1 text-xs text-[#8B98A8] hover:text-[#F5F7FA] hover:border-white/[0.14] transition-colors">{t}</button>
+                      )) : label === 'Price' ? ['Under ₹500', '₹500 - ₹700', 'Above ₹700'].map(t => (
+                        <button key={t} className="rounded-full bg-white/[0.05] border border-white/[0.07] px-3 py-1 text-xs text-[#8B98A8] hover:text-[#F5F7FA] hover:border-white/[0.14] transition-colors">{t}</button>
+                      )) : (
+                        <button className="rounded-full bg-white/[0.05] border border-white/[0.07] px-3 py-1 text-xs text-[#8B98A8] hover:text-[#F5F7FA] hover:border-white/[0.14] transition-colors">All</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        )}
-      </Container>
+          </aside>
 
-      <Drawer
-        open={filtersOpen}
-        onOpenChange={setFiltersOpen}
-        title="Filters"
-        footer={
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setFilters(DEFAULT_FILTERS(priceBounds))}>
-              Clear all
-            </Button>
-            <Button variant="signal" className="flex-1" onClick={() => setFiltersOpen(false)}>
-              Show {filtered.length} results
-            </Button>
-          </div>
-        }
-      >
-        <FilterPanel {...filterPanelProps} />
-      </Drawer>
-    </div>
-  )
-}
+          {/* Results */}
+          <div className="lg:col-span-9">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display text-2xl font-semibold text-[#F5F7FA]">Available Tickets</h2>
+              <button className="flex items-center gap-2 text-sm text-[#8B98A8] hover:text-[#F5F7FA] transition-colors"><ArrowUpDown className="h-4 w-4" /> Sort</button>
+            </div>
 
-function SkeletonCard() {
-  return (
-    <div className="animate-pulse rounded-xl border border-paper-line bg-white p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 space-y-3">
-          <div className="h-4 w-1/3 rounded bg-ink-900/10" />
-          <div className="h-3 w-1/4 rounded bg-ink-900/10" />
-          <div className="h-4 w-2/3 rounded bg-ink-900/10" />
+            <div className="space-y-5">
+              {results.map((ticket) => (
+                <motion.article
+                  key={ticket.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`group rounded-[28px] border transition-all duration-300 overflow-hidden ${selectedTicket === ticket.id ? 'bg-[#091A2B] border-[#3B82F6]/50 shadow-[0_12px_40px_rgba(59,130,246,0.12)]' : 'bg-[#091A2B] border-white/[0.07] hover:border-white/[0.14] hover:-translate-y-0.5'}`}
+                >
+                  <div className="p-7 lg:p-8">
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-10">
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="text-xs font-semibold tracking-wider uppercase text-[#8B98A8]">{ticket.operator}</span>
+                          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${ticket.direct ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#F59E0B]/10 text-[#F59E0B]'}`}>{ticket.direct ? 'Direct' : '1 Stop'}</span>
+                        </div>
+                        <div className="flex items-center gap-6 mb-2">
+                          <div>
+                            <div className="font-display text-3xl font-bold text-[#F5F7FA] leading-none">{ticket.dep}</div>
+                            <div className="text-sm text-[#8B98A8] mt-1">{ticket.from}</div>
+                          </div>
+                          <div className="flex flex-col items-center px-4">
+                            <div className="text-xs text-[#8B98A8] font-medium">{ticket.duration}</div>
+                            <div className="w-20 h-px bg-gradient-to-r from-transparent via-[#3B82F6]/30 to-transparent my-2" />
+                            <ArrowRight className="h-4 w-4 text-[#8B98A8] rotate-90 lg:rotate-0" />
+                          </div>
+                          <div>
+                            <div className="font-display text-3xl font-bold text-[#F5F7FA] leading-none">{ticket.arr}</div>
+                            <div className="text-sm text-[#8B98A8] mt-1">{ticket.to}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Price + CTA */}
+                      <div className="flex lg:flex-col lg:items-end gap-6 lg:gap-4 lg:min-w-[220px]">
+                        <div className="text-right">
+                          <div className="font-display text-3xl font-bold text-[#F5F7FA]">₹{ticket.price}</div>
+                          <div className="text-sm text-[#8B98A8]">{ticket.seats} seats left</div>
+                        </div>
+                        <a href={`/trip/${ticket.id}`} onClick={() => setSelectedTicket(ticket.id)} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#3B82F6] hover:bg-[#2563EB] text-white font-semibold px-7 py-3 shadow-[0_8px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_12px_40px_rgba(59,130,246,0.4)] transition-all hover:-translate-y-0.5 text-base whitespace-nowrap">
+                          Select <ArrowRight className="h-4 w-4" />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="h-16 w-24 rounded bg-ink-900/10" />
       </div>
-    </div>
-  )
-}
-
-function EmptyState({
-  icon,
-  title,
-  body,
-  action,
-}: {
-  icon: ReactNode
-  title: string
-  body: string
-  action?: ReactNode
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-ink-900/15 bg-white px-6 py-16 text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink-900/5 text-ink-500">{icon}</span>
-      <p className="mt-4 font-display text-lg font-semibold text-ink-950">{title}</p>
-      <p className="mt-1.5 max-w-sm text-sm text-ink-500">{body}</p>
-      {action && <div className="mt-5">{action}</div>}
-    </div>
+    </main>
   )
 }

@@ -10,13 +10,13 @@ interface LocationFieldProps {
 
 export function LocationField({ label, value, placeholder, onChange }: LocationFieldProps) {
   return (
-    <FieldShell icon={<MapPin strokeWidth={1.75} />} label={label}>
+    <FieldShell icon={<MapPin className="h-5 w-5" strokeWidth={2} />} label={label}>
       <input
         type="text"
         value={value}
         placeholder={placeholder ?? 'City, station or airport'}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full truncate bg-transparent text-[15px] font-semibold text-ink-900 outline-none placeholder:font-medium placeholder:text-ink-400"
+        className="w-full bg-transparent text-sm font-medium text-[var(--color-text-primary)] outline-none placeholder:text-[var(--color-text-muted)]"
       />
     </FieldShell>
   )

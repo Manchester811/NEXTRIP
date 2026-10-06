@@ -1,6 +1,7 @@
 import type { TripResult } from '@/types/results'
 import { Card } from '@/components/ui/Card'
-import { AmenityRow, RatingPill, RouteTimeline, PriceBlock, cancellationTone } from './shared'
+import { AmenityRow, RatingPill, RouteTimeline, PriceBlock } from './shared'
+import { cancellationTone } from '@/lib/cancellation'
 
 export function TrainCard({ trip, onSelect }: { trip: TripResult; onSelect?: () => void }) {
   return (

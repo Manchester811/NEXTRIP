@@ -10,13 +10,13 @@ interface DateFieldProps {
 
 export function DateField({ label, value, min, onChange }: DateFieldProps) {
   return (
-    <FieldShell icon={<Calendar strokeWidth={1.75} />} label={label}>
+    <FieldShell icon={<Calendar className="h-5 w-5" strokeWidth={2} />} label={label}>
       <input
         type="date"
         value={value}
         min={min}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-transparent text-[15px] font-semibold text-ink-900 outline-none [color-scheme:light]"
+        className="w-full bg-transparent text-sm font-medium text-[var(--color-text-primary)] outline-none [color-scheme:light]"
       />
     </FieldShell>
   )

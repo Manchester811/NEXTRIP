@@ -1,137 +1,105 @@
-import { useMemo } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, MapPin, ShieldCheck, Star } from 'lucide-react'
 import { motion } from 'motion/react'
-import { ArrowLeft, ArrowRight, Clock3, MapPin, ShieldCheck, Star, Wifi, Utensils, Zap } from 'lucide-react'
-import { Container } from '@/components/ui/Container'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { ModeIcon } from '@/components/transport/ModeIcon'
-import { AmenityRow, RouteTimeline } from '@/components/transport/cards/shared'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getSelectedTrip, saveSelectedTrip } from '@/services/bookingStore'
 import { generateResults } from '@/data/mockResults'
-import type { TransportMode } from '@/types/transport'
 
 function fallbackTrip(id: string) {
-  const mode = (['bus', 'train', 'flight', 'cab', 'metro', 'ferry'] as TransportMode[]).find((m) => id.startsWith(`${m}-`)) ?? 'bus'
-  return generateResults(mode, 'New Delhi', 'Mumbai', 12)[0]
+  const mode = ['bus','train','flight','cab','metro','ferry'].includes(id.split('-')[0] ?? '') ? id.split('-')[0] : 'bus'
+  return generateResults(mode as any, 'Vellore', 'Chennai', 12)[0]
 }
 
 export default function TripDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const trip = useMemo(() => {
+  const trip = (() => {
     const selected = getSelectedTrip()
-    return selected?.id === id ? selected : fallbackTrip(id ?? 'bus-0')
-  }, [id])
+    return (selected && selected.id === id) ? selected : fallbackTrip(id ?? 'bus-0')
+  })()
 
-  const handleContinue = () => {
-    saveSelectedTrip(trip)
-    navigate(`/seat-selection/${trip.id}`)
-  }
+  const handleContinue = () => { saveSelectedTrip(trip); navigate(`/seat-selection/${trip.id}`) }
 
   return (
-    <div className="min-h-screen bg-paper-dim pb-20">
-      <Container className="pt-7">
-        <Link to="/search" className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 hover:text-ink-950">
-          <ArrowLeft className="h-4 w-4" /> Back to results
-        </Link>
-
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-          <div className="space-y-5">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              <Card className="overflow-hidden">
-                <div className="bg-ink-950 p-6 text-white sm:p-8">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10">
-                        <ModeIcon mode={trip.mode} className="h-5 w-5 text-signal-300" />
-                      </span>
-                      <div>
-                        <p className="font-display text-xl font-semibold">{trip.operator}</p>
-                        <p className="text-sm text-white/50">{trip.mode.toUpperCase()} · {trip.id.slice(-6).toUpperCase()}</p>
-                      </div>
-                    </div>
-                    <Badge variant="outline-light"><Star className="h-3 w-3 fill-current" /> {trip.rating.toFixed(1)} · {trip.reviewCount} reviews</Badge>
+    <main className="min-h-screen bg-[#030B16] pb-24">
+      <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-12 pt-24 pb-12">
+        <Link to="/search" className="inline-flex items-center gap-2 text-sm font-medium text-[#8B98A8] hover:text-[#F5F7FA] transition-colors mb-6"><ArrowLeft className="h-4 w-4" /> Back to results</Link>
+        <div className="grid lg:grid-cols-[1fr_380px] gap-10 lg:gap-12">
+          <div className="space-y-6">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+              <div className="rounded-[28px] bg-[#091A2B] border border-white/[0.07] overflow-hidden">
+                <div className="bg-gradient-to-br from-[#091A2B] to-[#071525] p-8 lg:p-10">
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="font-display text-xl font-bold text-[#F5F7FA]">{trip.operator}</span>
+                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/[0.08] text-[#8B98A8]">{trip.mode?.toUpperCase()}</span>
                   </div>
-
-                  <div className="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
                     <div>
-                      <p className="flap text-3xl font-semibold">{trip.departureTime}</p>
-                      <p className="mt-1 text-sm text-white/55">{trip.boardingPoint ?? trip.departureAirport ?? 'Departure point'}</p>
+                      <div className="font-display text-4xl font-bold text-[#F5F7FA] leading-none">{trip.departureTime ?? '08:30'}</div>
+                      <div className="text-sm text-[#8B98A8] mt-2">Vellore</div>
                     </div>
-                    <div className="flex min-w-[110px] flex-col items-center gap-2 text-white/40">
-                      <Clock3 className="h-4 w-4" />
-                      <span className="h-px w-full bg-white/15" />
-                      <span className="font-mono text-[11px]">{trip.durationLabel}</span>
+                    <div className="flex flex-col items-center px-4 gap-2">
+                      <div className="text-xs text-[#8B98A8] font-medium">{trip.durationLabel ?? '3h 20m'}</div>
+                      <div className="w-24 h-px bg-gradient-to-r from-transparent via-[#3B82F6]/40 to-transparent" />
+                      <ArrowRight className="h-5 w-5 text-[#8B98A8] rotate-90 lg:rotate-0" />
                     </div>
                     <div className="text-right">
-                      <p className="flap text-3xl font-semibold">{trip.arrivalTime}</p>
-                      <p className="mt-1 text-sm text-white/55">{trip.droppingPoint ?? trip.arrivalAirport ?? 'Arrival point'}</p>
+                      <div className="font-display text-4xl font-bold text-[#F5F7FA] leading-none">{trip.arrivalTime ?? '11:50'}</div>
+                      <div className="text-sm text-[#8B98A8] mt-2">Chennai</div>
                     </div>
                   </div>
                 </div>
-
-                <div className="grid gap-5 p-6 sm:grid-cols-3">
-                  <Info label="Route" value={`${trip.boardingPoint ?? trip.departureAirport ?? 'Origin'} → ${trip.droppingPoint ?? trip.arrivalAirport ?? 'Destination'}`} icon={MapPin} />
-                  <Info label="Cancellation" value={trip.cancellation} icon={ShieldCheck} />
-                  <Info label="Availability" value={trip.seatsAvailable ? `${trip.seatsAvailable} seats remaining` : 'Frequent service'} icon={Zap} />
+                <div className="grid sm:grid-cols-3 gap-4 p-6 lg:p-8 border-t border-white/[0.07]">
+                  <Info label="Route" value="Vellore → Chennai" icon={MapPin} />
+                  <Info label="Cancellation" value={trip.cancellation ?? 'Free up to 4h before'} icon={ShieldCheck} />
+                  <Info label="Class" value={trip.travelClass ?? 'AC Seater'} icon={Star} />
                 </div>
-              </Card>
+              </div>
             </motion.div>
-
-            <Card className="p-6 sm:p-7">
-              <SectionTitle title="Journey details" />
-              <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                <RouteTimeline departureTime={trip.departureTime} arrivalTime={trip.arrivalTime} durationLabel={trip.durationLabel} stops={trip.stops} />
-                <div className="rounded-xl bg-paper-dim p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-400">Service</p>
-                  <p className="mt-2 font-display text-lg font-semibold text-ink-950">{trip.busType ?? trip.travelClass ?? trip.cabinClass ?? trip.cabType ?? trip.seatingClass ?? trip.metroLine}</p>
-                  <p className="mt-1 text-sm text-ink-500">Reliable, verified and bookable through NEXTRIP.</p>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6 sm:p-7">
-              <SectionTitle title="Amenities" />
-              <AmenityRow amenities={trip.amenities} className="mt-5" />
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <MiniFeature icon={Wifi} title="Connected" text="Live trip updates" />
-                <MiniFeature icon={Utensils} title="Comfort" text="Verified amenities" />
-                <MiniFeature icon={ShieldCheck} title="Protected" text="Secure booking" />
-              </div>
-            </Card>
           </div>
 
-          <aside>
-            <Card className="sticky top-24 overflow-hidden">
-              <div className="p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-400">Your fare</p>
-                <p className="mt-2 font-display text-3xl font-semibold text-ink-950">₹{trip.price.toLocaleString('en-IN')}</p>
-                <p className="mt-1 text-sm text-ink-400">per traveller · taxes included</p>
-
-                <div className="my-6 space-y-3 border-y border-paper-line py-5 text-sm">
-                  <Row label="Base fare" value={`₹${Math.round(trip.price * 0.88).toLocaleString('en-IN')}`} />
-                  <Row label="Service fee" value={`₹${Math.round(trip.price * 0.07).toLocaleString('en-IN')}`} />
-                  <Row label="Taxes" value={`₹${Math.max(0, trip.price - Math.round(trip.price * 0.95)).toLocaleString('en-IN')}`} />
-                </div>
-
-                <Button variant="primary" size="lg" className="w-full" onClick={handleContinue}>
-                  Continue to seats <ArrowRight className="h-4 w-4" />
-                </Button>
-                <p className="mt-3 text-center text-xs text-ink-400">No payment is taken until you confirm.</p>
+          <aside className="lg:pt-2">
+            <div className="rounded-[28px] bg-[#091A2B] border border-white/[0.07] p-7 lg:p-8 sticky top-28">
+              <h3 className="font-display text-2xl font-bold text-[#F5F7FA] mb-2">Booking Summary</h3>
+              <p className="text-sm text-[#8B98A8] mb-6">Review details before continuing.</p>
+              <div className="space-y-4 mb-8">
+                <Row label="Journey" value={`${trip.departurePort ?? trip.boardingPoint ?? 'Vellore'} → ${trip.droppingPoint ?? trip.arrivalPort ?? 'Chennai'}`} />
+                <Row label="Date" value={(trip as any).date ?? '12 Oct 2026'} />
+                <Row label="Departure" value={trip.departureTime ?? '08:30 AM'} />
+                <Row label="Arrival" value={trip.arrivalTime ?? '11:50 AM'} />
+                <Row label="Passenger" value="Rishabh Jain" />
+                <Row label="Operator" value={trip.operator} />
+                <Row label="Category" value={trip.travelClass ?? 'AC Seater'} />
+                <div className="h-px bg-white/[0.07]" />
+                <Row label="Price" value={`₹${trip.price ?? 450}`} highlight />
               </div>
-            </Card>
+              <button onClick={handleContinue} className="w-full rounded-2xl bg-gradient-to-r from-[#3B82F6] to-[#2563EB] hover:from-[#2563EB] hover:to-[#1D4ED8] text-white font-semibold px-6 py-4 text-lg shadow-[0_8px_30px_rgba(59,130,246,0.35)] hover:shadow-[0_12px_40px_rgba(59,130,246,0.45)] transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                Continue <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
           </aside>
         </div>
-      </Container>
+      </div>
+    </main>
+  )
+}
+
+function Info({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="h-9 w-9 rounded-xl bg-white/[0.05] flex items-center justify-center text-[#3B82F6]"><Icon className="h-4 w-4" strokeWidth={1.5} /></div>
+      <div>
+        <div className="text-xs text-[#8B98A8]">{label}</div>
+        <div className="text-sm font-medium text-[#F5F7FA]">{value}</div>
+      </div>
     </div>
   )
 }
 
-function Info({ label, value, icon: Icon }: { label: string; value: string; icon: typeof MapPin }) {
-  return <div className="flex gap-3"><Icon className="mt-0.5 h-4 w-4 shrink-0 text-signal-600" /><div><p className="text-xs text-ink-400">{label}</p><p className="mt-1 text-sm font-medium text-ink-900">{value}</p></div></div>
+function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-[#8B98A8]">{label}</span>
+      <span className={highlight ? 'font-display text-lg font-bold text-[#F5F7FA]' : 'text-[#F5F7FA] font-medium'}>{value}</span>
+    </div>
+  )
 }
-function SectionTitle({ title }: { title: string }) { return <h2 className="font-display text-xl font-semibold text-ink-950">{title}</h2> }
-function MiniFeature({ icon: Icon, title, text }: { icon: typeof Wifi; title: string; text: string }) { return <div className="rounded-xl border border-paper-line p-4"><Icon className="h-4 w-4 text-signal-600" /><p className="mt-3 text-sm font-semibold text-ink-950">{title}</p><p className="mt-1 text-xs text-ink-400">{text}</p></div> }
-function Row({ label, value }: { label: string; value: string }) { return <div className="flex justify-between gap-4"><span className="text-ink-500">{label}</span><span className="font-medium text-ink-950">{value}</span></div> }

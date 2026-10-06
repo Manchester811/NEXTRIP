@@ -1,7 +1,8 @@
 import type { TripResult } from '@/types/results'
 import { Luggage } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
-import { RatingPill, RouteTimeline, PriceBlock, cancellationTone } from './shared'
+import { RatingPill, RouteTimeline, PriceBlock } from './shared'
+import { cancellationTone } from '@/lib/cancellation'
 
 export function FlightCard({ trip, onSelect }: { trip: TripResult; onSelect?: () => void }) {
   return (

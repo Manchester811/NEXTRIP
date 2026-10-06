@@ -4,23 +4,23 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-colors duration-150 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-500 focus-visible:ring-offset-2',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-base)]',
   {
     variants: {
       variant: {
-        primary: 'bg-amber-500 text-ink-950 hover:bg-amber-400 active:bg-amber-600',
-        signal: 'bg-signal-600 text-white hover:bg-signal-500 active:bg-signal-700',
-        dark: 'bg-ink-900 text-white hover:bg-ink-800 active:bg-ink-950',
-        outline: 'border border-ink-600/30 bg-transparent text-ink-900 hover:bg-ink-900/5',
-        ghost: 'bg-transparent text-ink-900 hover:bg-ink-900/5',
-        'ghost-light': 'bg-transparent text-white hover:bg-white/10',
-        link: 'bg-transparent p-0 h-auto rounded-none text-signal-700 underline-offset-4 hover:underline',
+        primary: 'bg-[var(--color-accent)] text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent)]/90 shadow-[0_4px_20px_rgba(59,130,246,.3)] hover:shadow-[0_8px_30px_rgba(59,130,246,.4)]',
+        secondary: 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-white/10 hover:bg-[var(--color-bg-elevated)] hover:border-white/15',
+        outline: 'bg-transparent text-[var(--color-text-primary)] border border-white/10 hover:bg-white/5 hover:border-white/20',
+        ghost: 'bg-transparent text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-[var(--color-text-primary)]',
+        destructive: 'bg-[var(--color-error)] text-white hover:bg-[var(--color-error)]/90 shadow-[0_4px_20px_rgba(239,68,68,.3)]',
+        success: 'bg-[var(--color-success)] text-white hover:bg-[var(--color-success)]/90',
       },
       size: {
-        sm: 'h-9 px-4 text-sm',
-        md: 'h-11 px-5 text-sm',
-        lg: 'h-[52px] px-7 text-base',
-        icon: 'h-10 w-10',
+        sm: 'h-10 px-4 text-sm',
+        md: 'h-12 px-6 text-sm',
+        lg: 'h-14 px-8 text-base',
+        xl: 'h-16 px-10 text-lg',
+        icon: 'h-12 w-12',
       },
     },
     defaultVariants: {

@@ -1,23 +1,23 @@
-import { useMemo, useState } from 'react'
-import { CalendarDays, ChevronRight, Ticket } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Ticket, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { Container } from '@/components/ui/Container'
-import { ModeIcon } from '@/components/transport/ModeIcon'
+import { motion } from 'motion/react'
 import { cancelBooking, getBookings } from '@/services/bookingStore'
 
-const tabs = ['all', 'upcoming', 'completed', 'cancelled'] as const
-type BookingTab = (typeof tabs)[number]
+const tabs = [
+  { key: 'all', label: 'All' },
+  { key: 'upcoming', label: 'Upcoming' },
+  { key: 'completed', label: 'Completed' },
+  { key: 'cancelled', label: 'Cancelled' },
+] as const
 
 export default function Bookings() {
   const [bookings, setBookings] = useState(getBookings())
-  const [tab, setTab] = useState<BookingTab>('all')
+  const [tab, setTab] = useState('all')
 
   const visible = useMemo(() => {
     if (tab === 'all') return bookings
-    return bookings.filter((booking) => booking.status.toLowerCase() === tab)
+    return bookings.filter((b: any) => b.status?.toLowerCase() === tab)
   }, [bookings, tab])
 
   const handleCancel = (id: string) => {
@@ -27,118 +27,67 @@ export default function Bookings() {
   }
 
   return (
-    <div className="min-h-screen bg-paper-dim pb-20">
-      <Container className="py-10">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-signal-700">
-              Your journeys
-            </p>
-            <h1 className="mt-2 font-display text-3xl font-semibold text-ink-950">My bookings</h1>
-            <p className="mt-1 text-sm text-ink-500">
-              Everything you have booked with NEXTRIP, in one place.
-            </p>
-          </div>
-          <Button asChild variant="signal">
-            <Link to="/">Book another trip</Link>
-          </Button>
+    <main className="min-h-screen bg-[#030B16] pb-24">
+      <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-12 pt-24 pb-10">
+        <h1 className="font-display text-[36px] sm:text-[44px] lg:text-[52px] font-bold tracking-[-0.03em] text-[#F5F7FA] leading-tight mb-3">My bookings</h1>
+        <p className="text-[#8B98A8] text-lg max-w-xl">Your upcoming and previous journeys.</p>
+      </div>
+
+      <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-12 pb-24">
+        {/* Tabs */}
+        <div className="flex gap-1 mb-8 overflow-x-auto pb-1">
+          {tabs.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all ${tab === t.key ? 'bg-[#3B82F6] text-white shadow-[0_2px_10px_rgba(59,130,246,0.35)]' : 'bg-white/[0.05] text-[#8B98A8] hover:text-[#F5F7FA] hover:bg-white/[0.08]'}`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
-        {bookings.length === 0 ? (
-          <Card className="mt-8 flex flex-col items-center px-6 py-20 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-signal-50 text-signal-700">
-              <Ticket className="h-6 w-6" />
-            </span>
-            <h2 className="mt-5 font-display text-xl font-semibold">No bookings yet</h2>
-            <p className="mt-2 max-w-sm text-sm text-ink-500">
-              Your confirmed journeys will appear here after you complete a booking.
-            </p>
-            <Button asChild className="mt-6">
-              <Link to="/">Find a trip</Link>
-            </Button>
-          </Card>
+        {visible.length === 0 ? (
+          <div className="rounded-[28px] bg-[#091A2B] border border-white/[0.07] p-16 text-center">
+            <div className="mx-auto h-16 w-16 rounded-full bg-white/[0.05] flex items-center justify-center mb-6"><Ticket className="h-7 w-7 text-[#8B98A8]" /></div>
+            <h2 className="font-display text-2xl font-bold text-[#F5F7FA] mb-2">No bookings yet</h2>
+            <p className="text-[#8B98A8] mb-6">Your confirmed journeys will appear here after you complete a booking.</p>
+            <Link to="/search" className="inline-flex items-center gap-2 rounded-2xl bg-[#3B82F6] text-white font-semibold px-6 py-3 hover:bg-[#2563EB] transition-colors">Find a trip <ChevronRight className="h-4 w-4" /></Link>
+          </div>
         ) : (
-          <div className="mt-8">
-            <div className="mb-5 flex flex-wrap gap-2">
-              {tabs.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setTab(item)}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition ${
-                    tab === item
-                      ? 'bg-ink-950 text-white'
-                      : 'bg-white text-ink-500 hover:bg-paper-dim'
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            {visible.length === 0 ? (
-              <Card className="flex flex-col items-center px-6 py-16 text-center">
-                <p className="font-display text-lg font-semibold">
-                  No {tab === 'all' ? '' : tab} bookings
-                </p>
-                <p className="mt-2 text-sm text-ink-500">Try another booking category.</p>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {visible.map((booking) => (
-                  <Card key={booking.id} className="overflow-hidden">
-                    <div className="grid gap-5 p-5 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-6">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-signal-50 text-signal-700">
-                        <ModeIcon mode={booking.trip.mode} className="h-5 w-5" />
-                      </span>
-
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold text-ink-950">{booking.trip.operator}</p>
-                          <Badge variant="signal">{booking.status}</Badge>
-                        </div>
-
-                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-ink-500">
-                          <span>{booking.trip.departureTime}</span>
-                          <ChevronRight className="h-3.5 w-3.5" />
-                          <span>{booking.trip.arrivalTime}</span>
-                          <span className="text-ink-300">·</span>
-                          <span>{booking.seats.join(', ')}</span>
-                        </div>
-
-                        <div className="mt-2 flex items-center gap-2 text-xs text-ink-400">
-                          <CalendarDays className="h-3.5 w-3.5" />
-                          <span>Booking {booking.id}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
-                        <p className="font-display text-xl font-semibold">
-                          ₹{booking.total.toLocaleString('en-IN')}
-                        </p>
-                        <div className="flex gap-2">
-                          <Button asChild variant="outline" size="sm">
-                            <Link to={`/confirmation/${booking.id}`}>View ticket</Link>
-                          </Button>
-                          {booking.status === 'Upcoming' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCancel(booking.id)}
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {visible.map((b: any, i: number) => (
+              <motion.article
+                key={b.id || b.bookingId}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="rounded-[28px] bg-[#091A2B] border border-white/[0.07] p-7 hover:border-white/[0.14] transition-all hover:-translate-y-1"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className={`text-xs font-semibold px-3 py-1 rounded-full ${b.status === 'CONFIRMED' ? 'bg-[#10B981]/10 text-[#10B981]' : b.status === 'COMPLETED' ? 'bg-[#3B82F6]/10 text-[#3B82F6]' : 'bg-[#EF4444]/10 text-[#EF4444]'}`}>{b.status || 'CONFIRMED'}</span>
+                  <span className="text-xs text-[#8B98A8] font-mono">{b.bookingId || b.id}</span>
+                </div>
+                <h3 className="font-display text-xl font-bold text-[#F5F7FA] mb-1">{b.route || `${b.origin} → ${b.destination}`}</h3>
+                <p className="text-sm text-[#8B98A8] mb-4">{b.date || '12 Oct 2026'} · {b.time || '08:30 AM'}</p>
+                <div className="grid grid-cols-2 gap-3 mb-6 text-sm">
+                  <Info label="Operator" value={b.operator || 'ACME Travels'} />
+                  <Info label="Seat" value={b.seat || '24A'} />
+                  <Info label="Price" value={`₹${b.price || 450}`} />
+                </div>
+                <div className="flex gap-2">
+                  <Link to={`/booking-details/${b.id || b.bookingId}`} className="flex-1 text-center rounded-xl border border-white/[0.10] px-3 py-2.5 text-sm font-medium text-[#F5F7FA] hover:bg-white/[0.05] transition-colors">View ticket</Link>
+                  {b.status !== 'CANCELLED' && <button onClick={() => handleCancel(b.id || b.bookingId)} className="flex-1 text-center rounded-xl border border-white/[0.10] px-3 py-2.5 text-sm font-medium text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors">Cancel</button>}
+                </div>
+              </motion.article>
+            ))}
           </div>
         )}
-      </Container>
-    </div>
+      </div>
+    </main>
   )
+}
+
+function Info({ label, value }: { label: string; value: string }) {
+  return <div><div className="text-xs text-[#8B98A8]">{label}</div><div className="font-medium text-[#F5F7FA]">{value}</div></div>
 }

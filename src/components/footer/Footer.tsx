@@ -1,86 +1,39 @@
-import { Link } from 'react-router-dom'
-import { Bus, TrainFront, Plane, Car, TramFront, Ship } from 'lucide-react'
-import { Container } from '@/components/ui/Container'
-
-const COLUMNS = [
-  {
-    title: 'Travel',
-    links: [
-      { label: 'Flights', to: '/search?mode=flight', icon: Plane },
-      { label: 'Trains', to: '/search?mode=train', icon: TrainFront },
-      { label: 'Buses', to: '/search?mode=bus', icon: Bus },
-      { label: 'Cabs', to: '/search?mode=cab', icon: Car },
-      { label: 'Metro', to: '/search?mode=metro', icon: TramFront },
-      { label: 'Ferries', to: '/search?mode=ferry', icon: Ship },
-    ],
-  },
-  {
-    title: 'Company',
-    links: [
-      { label: 'About NEXTRIP', to: '/about' },
-      { label: 'Careers', to: '/careers' },
-      { label: 'Press', to: '/press' },
-      { label: 'Partner with us', to: '/partners' },
-    ],
-  },
-  {
-    title: 'Support',
-    links: [
-      { label: 'Help centre', to: '/help' },
-      { label: 'My bookings', to: '/bookings' },
-      { label: 'Cancellation policy', to: '/help/cancellations' },
-      { label: 'Contact us', to: '/help/contact' },
-    ],
-  },
-  {
-    title: 'Legal',
-    links: [
-      { label: 'Terms of service', to: '/legal/terms' },
-      { label: 'Privacy policy', to: '/legal/privacy' },
-      { label: 'Refund policy', to: '/legal/refunds' },
-    ],
-  },
-]
+import { CalendarDays } from 'lucide-react'
 
 export function Footer() {
+  const year = new Date().getFullYear()
   return (
-    <footer className="bg-ink-950 pt-16">
-      <Container>
-        <div className="grid grid-cols-2 gap-8 pb-12 sm:grid-cols-4 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
-          <div className="col-span-2 sm:col-span-4 lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-signal-500 text-ink-950 font-display font-bold text-sm">
-                N
-              </span>
-              <span className="font-display text-lg font-semibold text-white">NEXTRIP</span>
-            </Link>
-            <p className="mt-3 max-w-[240px] text-sm leading-relaxed text-white/45">
-              Every journey. One platform. Compare and book across six modes of transport in seconds.
-            </p>
+    <footer className="border-t border-white/[0.07] bg-[#020914]">
+      <div className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-12 py-14 lg:py-20">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8">
+          <div className="lg:col-span-5">
+            <a href="/" className="flex items-center gap-3" aria-label="NEXTRIP home">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#3B82F6] to-[#2563EB] text-white font-display font-bold text-lg shadow-[0_4px_20px_rgba(59,130,246,0.35)]">N</span>
+              <span className="font-display text-2xl font-bold tracking-tight text-[#F5F7FA]">NEXTRIP</span>
+            </a>
+            <p className="mt-4 text-[#8B98A8] leading-relaxed max-w-md">Premium multi-modal ticket booking. Real-time availability, seamless checkout, and reliable journeys.</p>
           </div>
-
-          {COLUMNS.map((col) => (
-            <div key={col.title}>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/40">{col.title}</p>
-              <ul className="mt-4 flex flex-col gap-2.5">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <Link to={link.to} className="flex items-center gap-2 text-sm text-white/65 hover:text-white">
-                      {'icon' in link && link.icon ? <link.icon className="h-3.5 w-3.5 text-white/35" /> : null}
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="lg:col-span-3 lg:pl-8">
+            <h3 className="text-sm font-semibold text-[#F5F7FA] tracking-wide uppercase mb-4">Platform</h3>
+            <ul className="space-y-2.5 text-[#8B98A8] text-[15px]">
+              {['Search tickets','My bookings','Profile','Help center'].map(l => <li key={l}><a href={l === 'Search tickets' ? '/search' : l === 'My bookings' ? '/bookings' : l === 'Profile' ? '/profile' : '/help'} className="hover:text-[#F5F7FA] transition-colors">{l}</a></li>)}
+            </ul>
+          </div>
+          <div className="lg:col-span-4 lg:pl-8">
+            <h3 className="text-sm font-semibold text-[#F5F7FA] tracking-wide uppercase mb-4">Company</h3>
+            <ul className="space-y-2.5 text-[#8B98A8] text-[15px]">
+              {['About us','Careers','Press','Contact'].map(l => <li key={l}><a href="/about" className="hover:text-[#F5F7FA] transition-colors">{l}</a></li>)}
+            </ul>
+          </div>
         </div>
-
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 py-6 sm:flex-row">
-          <p className="text-xs text-white/35">© {new Date().getFullYear()} NEXTRIP. All rights reserved.</p>
-          <p className="text-xs text-white/35">Made for travellers, by travellers.</p>
+        <div className="mt-14 pt-8 border-t border-white/[0.07] flex flex-col sm:flex-row items-center justify-between gap-4 text-[#5A6B7E] text-sm">
+          <span>© {year} NEXTRIP. All rights reserved.</span>
+          <div className="flex gap-6">
+            <a href="#" className="hover:text-[#F5F7FA] transition-colors">Terms</a>
+            <a href="#" className="hover:text-[#F5F7FA] transition-colors">Privacy</a>
+          </div>
         </div>
-      </Container>
+      </div>
     </footer>
   )
 }

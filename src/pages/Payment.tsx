@@ -17,8 +17,8 @@ const methods: { label: string; icon: LucideIcon; hint: string }[] = [
 export default function Payment() {
   const navigate = useNavigate()
   const trip = getSelectedTrip()
-  const seats = JSON.parse(sessionStorage.getItem('nextrip:selected-seats') ?? '[]') as string[]
-  const passengers = JSON.parse(sessionStorage.getItem('nextrip:passengers') ?? '[]') as { name: string; age: string; gender: string }[]
+  const seats = (() => { try { return JSON.parse(sessionStorage.getItem('nextrip:selected-seats') ?? '[]') as string[] } catch { return [] } })()
+  const passengers = (() => { try { const v = JSON.parse(sessionStorage.getItem('nextrip:passengers') ?? '[]') as { name: string; age: number; gender: string }[]; return v } catch { return [] } })()
   const [method, setMethod] = useState('UPI')
   const [processing, setProcessing] = useState(false)
   const [success, setSuccess] = useState(false)
